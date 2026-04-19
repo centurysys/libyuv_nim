@@ -59,7 +59,7 @@ proc withTrace(err: LibYuvError; where: static[string]): LibYuvError {.inline.} 
 # ------------------------------------------------------------------------------
 proc trace*[T](res: LY[T]; where: static[string]): LY[T] {.inline.} =
   if res.isErr:
-    result = err(res.LibYuvError.withTrace(where))
+    result = err(res.error.withTrace(where))
   else:
     result = res
 
@@ -68,7 +68,7 @@ proc trace*[T](res: LY[T]; where: static[string]): LY[T] {.inline.} =
 # ------------------------------------------------------------------------------
 proc errKind*[T](res: LY[T]): LibYuvErrorKind =
   if res.isErr:
-    result = res.LibYuvError.kind
+    result = res.error.kind
   else:
     result = lyOperationFailed
 
@@ -77,7 +77,7 @@ proc errKind*[T](res: LY[T]): LibYuvErrorKind =
 # ------------------------------------------------------------------------------
 proc errRc*[T](res: LY[T]): cint =
   if res.isErr:
-    result = res.LibYuvError.rc
+    result = res.error.rc
   else:
     result = 0
 
@@ -86,7 +86,7 @@ proc errRc*[T](res: LY[T]): cint =
 # ------------------------------------------------------------------------------
 proc errMsg*[T](res: LY[T]): string =
   if res.isErr:
-    result = res.LibYuvError.msg
+    result = res.error.msg
   else:
     result = "No LibYuvError"
 
