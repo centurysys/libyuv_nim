@@ -1,6 +1,4 @@
-import std/monotimes
 import std/strformat
-import std/times
 import ../core/errors
 import ../core/image_types
 import ../core/image_alloc
@@ -136,43 +134,22 @@ proc letterbox*(src: RgbImage, dstWidth: int, dstHeight: int, padValue: uint8 = 
 # ------------------------------------------------------------------------------
 proc toRgbLetterbox*(src: Nv12Image, dstWidth: int = 640, dstHeight: int = 640,
     padValue: uint8 = 114): LY[tuple[image: RgbImage, info: LetterboxInfo]] =
-  proc elapsedTime(ts1, ts0: MonoTime): int64 =
-    result = (ts1 - ts0).inMicroseconds()
-
-  var ts0, ts1: MonoTime
   let infoRes = computeLetterboxInfo(src.width, src.height, dstWidth, dstHeight)
   if infoRes.isErr:
     return err(infoRes.error)
   let info = infoRes.get
-  ts0 = getMonoTime()
   let scaledRes = scale(src, info.resizedWidth, info.resizedHeight)
-  ts1 = getMonoTime()
   if scaledRes.isErr:
     return err(scaledRes.error)
-  echo &"scale: {elapsedTime(ts1, ts0)} [us]"
-  ts0 = getMonoTime()
   let rgbRes = toRgb(scaledRes.get)
-  ts1 = getMonoTime()
   if rgbRes.isErr:
     return err(rgbRes.error)
-  echo &"toRgb: {elapsedTime(ts1, ts0)} [us]"
-
-  ts0 = getMonoTime()
   let dstRes = allocRgbImage(dstWidth, dstHeight)
-  ts1 = getMonoTime()
   if dstRes.isErr:
     return err(dstRes.error)
-  echo &"allocRgbImage: {elapsedTime(ts1, ts0)} [us]"
   var dst = dstRes.get()
-  ts0 = getMonoTime()
   dst.fill(padValue)
-  ts1 = getMonoTime()
-  echo &"fill: {elapsedTime(ts1, ts0)} [us]"
-
-  ts0 = getMonoTime()
   let blitRes = blit(dst, rgbRes.get, info.offsetX, info.offsetY)
-  ts1 = getMonoTime()
   if blitRes.isErr:
     return err(blitRes.error)
-  echo &"blit: {elapsedTime(ts1, ts0)} [us]"
   result = ok((image: dst, info: info))
