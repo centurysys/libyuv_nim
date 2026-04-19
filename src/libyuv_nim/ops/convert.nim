@@ -122,8 +122,8 @@ proc toI420*(src: RgbaImage): LY[I420Image] =
     return err(dstRes.error)
 
   var dst = dstRes.get()
-  let rc = RGBAToI420(
-    ptrOrNil(src.data),
+  let rc = ABGRToI420(
+    rgbaDataPtr(src),
     src.stride.cint,
     ptrOrNil(dst.y),
     dst.strideY.cint,
@@ -138,7 +138,7 @@ proc toI420*(src: RgbaImage): LY[I420Image] =
   if rc != 0:
     return err(makeError(
       lyOperationFailed,
-      &"RGBAToI420 failed: rc={rc}"
+      &"ABGRToI420 failed: rc={rc}"
     ))
 
   result = ok(dst)
@@ -190,14 +190,14 @@ proc toRgba*(src: I420Image): LY[RgbaImage] =
     return err(dstRes.error)
 
   var dst = dstRes.get()
-  let rc = I420ToRGBA(
+  let rc = I420ToABGR(
     ptrOrNil(src.y),
     src.strideY.cint,
     ptrOrNil(src.u),
     src.strideU.cint,
     ptrOrNil(src.v),
     src.strideV.cint,
-    ptrOrNil(dst.data),
+    rgbaDataPtr(dst),
     dst.stride.cint,
     src.width.cint,
     src.height.cint
@@ -206,7 +206,7 @@ proc toRgba*(src: I420Image): LY[RgbaImage] =
   if rc != 0:
     return err(makeError(
       lyOperationFailed,
-      &"I420ToRGBA failed: rc={rc}"
+      &"I420ToABGR failed: rc={rc}"
     ))
 
   result = ok(dst)
@@ -215,11 +215,33 @@ proc toRgba*(src: I420Image): LY[RgbaImage] =
 #
 # ------------------------------------------------------------------------------
 proc toRgba*(src: Nv12Image): LY[RgbaImage] =
-  let i420Res = toI420(src)
-  if i420Res.isErr:
-    return err(i420Res.error)
+  let validCheck = requireValidImage(src)
+  if validCheck.isErr:
+    return err(validCheck.error)
 
-  result = toRgba(i420Res.get())
+  let dstRes = allocRgbaImage(src.width, src.height)
+  if dstRes.isErr:
+    return err(dstRes.error)
+
+  var dst = dstRes.get()
+  let rc = NV12ToABGR(
+    ptrOrNil(src.y),
+    src.strideY.cint,
+    ptrOrNil(src.uv),
+    src.strideUV.cint,
+    rgbaDataPtr(dst),
+    dst.stride.cint,
+    src.width.cint,
+    src.height.cint
+  )
+
+  if rc != 0:
+    return err(makeError(
+      lyOperationFailed,
+      &"NV12ToABGR failed: rc={rc}"
+    ))
+
+  result = ok(dst)
 
 # ------------------------------------------------------------------------------
 #

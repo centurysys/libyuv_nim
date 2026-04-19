@@ -1,11 +1,15 @@
-#import ../bindings/types
-
 type
   PixelFormat* = enum
     pfI420
     pfNv12
     pfRgba
     pfRgb
+
+  ColorRGBA* = object
+    r*: uint8
+    g*: uint8
+    b*: uint8
+    a*: uint8
 
   I420Image* = object
     width*: int
@@ -29,7 +33,7 @@ type
     width*: int
     height*: int
     stride*: int
-    data*: seq[uint8]
+    data*: seq[ColorRGBA]
 
   RgbImage* = object
     width*: int
@@ -76,6 +80,12 @@ proc bytesPerPixel*(format: PixelFormat): int =
 # ------------------------------------------------------------------------------
 #
 # ------------------------------------------------------------------------------
+proc bytesPerPixel*(_: typedesc[ColorRGBA]): int =
+  result = 4
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
 proc chromaWidth*(width: int): int =
   result = (width + 1) div 2
 
@@ -118,6 +128,12 @@ proc uvPlaneLen*(image: Nv12Image): int =
 # ------------------------------------------------------------------------------
 #
 # ------------------------------------------------------------------------------
+proc pixelLen*(image: RgbaImage): int =
+  result = image.data.len
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
 proc dataLen*(image: RgbaImage): int =
   result = image.stride * image.height
 
@@ -126,6 +142,30 @@ proc dataLen*(image: RgbaImage): int =
 # ------------------------------------------------------------------------------
 proc dataLen*(image: RgbImage): int =
   result = image.stride * image.height
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
+proc rgbaDataLen*(image: RgbaImage): int =
+  result = image.data.len * bytesPerPixel(ColorRGBA)
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
+proc rgbaDataPtr*(image: var RgbaImage): ptr uint8 =
+  if image.data.len == 0:
+    result = nil
+  else:
+    result = cast[ptr uint8](addr image.data[0])
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
+proc rgbaDataPtr*(image: RgbaImage): ptr uint8 =
+  if image.data.len == 0:
+    result = nil
+  else:
+    result = cast[ptr uint8](unsafeAddr image.data[0])
 
 # ------------------------------------------------------------------------------
 #
@@ -170,7 +210,7 @@ proc isValid*(image: RgbaImage): bool =
     image.width > 0 and
     image.height > 0 and
     image.stride >= image.width * bytesPerPixel(pfRgba) and
-    image.data.len >= expected
+    image.rgbaDataLen() >= expected
 
 # ------------------------------------------------------------------------------
 #

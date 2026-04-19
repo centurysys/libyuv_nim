@@ -6,10 +6,11 @@ import ./core/[
 ]
 import ./ops/[
   convert,
+  io,
   letterbox,
   scale
 ]
 export types
 export errors except okVoid, makeError
 export image_types, image_alloc
-export convert, letterbox, scale
+export convert, io, letterbox, scale

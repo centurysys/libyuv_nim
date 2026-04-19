@@ -69,8 +69,8 @@ proc allocRgbaImage*(width, height: int): LY[RgbaImage] =
   var image: RgbaImage
   image.width = width
   image.height = height
-  image.stride = width * 4
-  image.data = newSeq[uint8](image.dataLen)
+  image.stride = width * bytesPerPixel(pfRgba)
+  image.data = newSeq[ColorRGBA](width * height)
 
   result = ok(image)
 
@@ -82,18 +82,27 @@ proc allocRgbaImageWithStride*(width, height, stride: int): LY[RgbaImage] =
   if dimCheck.isErr:
     return err(dimCheck.error)
 
-  if stride < width * 4:
+  let minStride = width * bytesPerPixel(pfRgba)
+  if stride < minStride:
     return makeError(
       lyInvalidArgument,
       &"stride is too small for RGBA: stride={stride}, width={width}, " &
-      &"minStride={width * 4}"
+      &"minStride={minStride}"
     ).err
+
+  if stride mod bytesPerPixel(pfRgba) != 0:
+    return makeError(
+      lyInvalidArgument,
+      &"stride must be a multiple of 4 for RGBA: stride={stride}"
+    ).err
+
+  let pixelsPerRow = stride div bytesPerPixel(pfRgba)
 
   var image: RgbaImage
   image.width = width
   image.height = height
   image.stride = stride
-  image.data = newSeq[uint8](image.dataLen)
+  image.data = newSeq[ColorRGBA](pixelsPerRow * height)
 
   result = ok(image)
 

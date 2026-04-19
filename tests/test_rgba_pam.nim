@@ -1,6 +1,5 @@
-import std/monotimes
+import std/os
 import std/strformat
-import std/times
 import libyuv_nim
 import libyuv_nim/core/errors
 
@@ -19,7 +18,6 @@ proc clampByte(x: int): uint8 =
   result = uint8(x)
 
 # ------------------------------------------------------------------------------
-#
 # BT.601 limited-range approximation
 # ------------------------------------------------------------------------------
 proc rgbToNv12Yuv(r, g, b: int): tuple[y, u, v: uint8] =
@@ -75,61 +73,53 @@ proc makeQuadrantNv12Image(width, height: int): LY[Nv12Image] =
   let halfWidth = width div 2
   let halfHeight = height div 2
 
-  fillNv12Rect(image, 0, 0, halfWidth, halfHeight, 0, 0, 255)                 # blue
-  fillNv12Rect(image, halfWidth, 0, width - halfWidth, halfHeight, 0, 255, 0) # green
-  fillNv12Rect(image, 0, halfHeight, halfWidth, height - halfHeight, 255, 0, 0) # red
+  fillNv12Rect(image, 0, 0, halfWidth, halfHeight, 0, 0, 255)                    # blue
+  fillNv12Rect(image, halfWidth, 0, width - halfWidth, halfHeight, 0, 255, 0)    # green
+  fillNv12Rect(image, 0, halfHeight, halfWidth, height - halfHeight, 255, 0, 0)  # red
   fillNv12Rect(image, halfWidth, halfHeight, width - halfWidth, height - halfHeight,
-      255, 255, 255) # white
+      255, 255, 255)                                                              # white
 
   result = ok(image)
 
 # ------------------------------------------------------------------------------
 #
 # ------------------------------------------------------------------------------
-proc runCase(name: string; srcWidth, srcHeight: int): LY[void] =
-  let srcRes = makeQuadrantNv12Image(srcWidth, srcHeight)
-  if srcRes.isErr:
-    return err(srcRes.error)
-  let src = srcRes.get
-  let tsStart = getMonoTime()
-  let lbRes = toRgbLetterbox(
-    src = src,
-    dstWidth = 640,
-    dstHeight = 640,
-    padValue = 114'u8
-  )
-  let tsEnd = getMonoTime()
-  if lbRes.isErr:
-    return err(lbRes.error)
-  let elapsedTime = (tsEnd - tsStart).inMicroseconds()
-  let (image, info) = lbRes.get
-  echo &"[{name}]"
-  echo &"  srcWidth      = {info.srcWidth}"
-  echo &"  srcHeight     = {info.srcHeight}"
-  echo &"  resizedWidth  = {info.resizedWidth}"
-  echo &"  resizedHeight = {info.resizedHeight}"
-  echo &"  offsetX       = {info.offsetX}"
-  echo &"  offsetY       = {info.offsetY}"
-  echo &"  scaleX        = {info.scaleX:.6f}"
-  echo &"  scaleY        = {info.scaleY:.6f}"
-  let outPath = &"tests/out/{name}.ppm"
-  let saveRes = savePpm(outPath, image)
-  if saveRes.isErr:
-    return err(saveRes.error)
-  echo &"  saved         = {outPath}"
-  echo &"  elapsed       = {elapsedTime} [us]"
-  result = okVoid()
+proc dumpPixel(label: string; image: RgbaImage; x, y: int) =
+  let rowStride = image.stride div 4
+  let pixel = image.data[y * rowStride + x]
+  echo &"  {label}: rgba=({pixel.r}, {pixel.g}, {pixel.b}, {pixel.a})"
 
 # ------------------------------------------------------------------------------
 #
 # ------------------------------------------------------------------------------
 proc main(): LY[void] =
-  let landscapeRes = runCase("test_letterbox_landscape", 1920, 1080)
-  if landscapeRes.isErr:
-    return err(landscapeRes.error)
-  let portraitRes = runCase("test_letterbox_portrait", 1080, 1920)
-  if portraitRes.isErr:
-    return err(portraitRes.error)
+  let srcRes = makeQuadrantNv12Image(640, 480)
+  if srcRes.isErr:
+    return err(srcRes.error)
+
+  let rgbaRes = toRgba(srcRes.get)
+  if rgbaRes.isErr:
+    return err(rgbaRes.error)
+
+  let image = rgbaRes.get
+
+  createDir("tests/out")
+  let outPath = "tests/out/test_rgba_quadrants.pam"
+  let saveRes = savePam(outPath, image)
+  if saveRes.isErr:
+    return err(saveRes.error)
+
+  echo "[test_rgba_pam]"
+  echo &"  saved  = {outPath}"
+  echo &"  width  = {image.width}"
+  echo &"  height = {image.height}"
+  echo &"  stride = {image.stride}"
+
+  dumpPixel("top-left", image, image.width div 4, image.height div 4)
+  dumpPixel("top-right", image, image.width * 3 div 4, image.height div 4)
+  dumpPixel("bottom-left", image, image.width div 4, image.height * 3 div 4)
+  dumpPixel("bottom-right", image, image.width * 3 div 4, image.height * 3 div 4)
+
   result = okVoid()
 
 
