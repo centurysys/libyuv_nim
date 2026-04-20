@@ -5,7 +5,7 @@ type
     pfRgba
     pfRgb
 
-  ColorRGBA* = object
+  PixelRGBA* = object
     r*: uint8
     g*: uint8
     b*: uint8
@@ -33,7 +33,7 @@ type
     width*: int
     height*: int
     stride*: int
-    data*: seq[ColorRGBA]
+    data*: seq[PixelRGBA]
 
   RgbImage* = object
     width*: int
@@ -80,7 +80,7 @@ proc bytesPerPixel*(format: PixelFormat): int =
 # ------------------------------------------------------------------------------
 #
 # ------------------------------------------------------------------------------
-proc bytesPerPixel*(_: typedesc[ColorRGBA]): int =
+proc bytesPerPixel*(_: typedesc[PixelRGBA]): int =
   result = 4
 
 # ------------------------------------------------------------------------------
@@ -147,7 +147,7 @@ proc dataLen*(image: RgbImage): int =
 #
 # ------------------------------------------------------------------------------
 proc rgbaDataLen*(image: RgbaImage): int =
-  result = image.data.len * bytesPerPixel(ColorRGBA)
+  result = image.data.len * bytesPerPixel(PixelRGBA)
 
 # ------------------------------------------------------------------------------
 #

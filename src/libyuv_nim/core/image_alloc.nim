@@ -70,7 +70,7 @@ proc allocRgbaImage*(width, height: int): LY[RgbaImage] =
   image.width = width
   image.height = height
   image.stride = width * bytesPerPixel(pfRgba)
-  image.data = newSeq[ColorRGBA](width * height)
+  image.data = newSeq[PixelRGBA](width * height)
 
   result = ok(image)
 
@@ -102,7 +102,7 @@ proc allocRgbaImageWithStride*(width, height, stride: int): LY[RgbaImage] =
   image.width = width
   image.height = height
   image.stride = stride
-  image.data = newSeq[ColorRGBA](pixelsPerRow * height)
+  image.data = newSeq[PixelRGBA](pixelsPerRow * height)
 
   result = ok(image)
 

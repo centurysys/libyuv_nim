@@ -21,14 +21,14 @@ Internally libyuv ABGR conversions are used to guarantee this on little-endian s
 
 ```nim
 type
-  ColorRGBA = object
+  PixelRGBA = object
     r, g, b, a: uint8
 
   RgbaImage = object
     width: int
     height: int
     stride: int
-    data: seq[ColorRGBA]
+    data: seq[PixelRGBA]
 ```
 
 ## Usage
