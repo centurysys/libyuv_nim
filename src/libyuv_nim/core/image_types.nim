@@ -41,6 +41,43 @@ type
     stride*: int
     data*: seq[uint8]
 
+  # ----------------------------------------------------------------------------
+  # Borrowed / zero-copy views
+  # ----------------------------------------------------------------------------
+  I420View* = object
+    ## Borrowed view over I420 planes. Does not own memory.
+    width*: int
+    height*: int
+    strideY*: int
+    strideU*: int
+    strideV*: int
+    y*: ptr uint8
+    u*: ptr uint8
+    v*: ptr uint8
+
+  Nv12View* = object
+    ## Borrowed view over NV12 planes. Does not own memory.
+    width*: int
+    height*: int
+    strideY*: int
+    strideUV*: int
+    y*: ptr uint8
+    uv*: ptr uint8
+
+  RgbaView* = object
+    ## Borrowed view over RGBA pixels (byte order R,G,B,A in memory).
+    width*: int
+    height*: int
+    stride*: int
+    data*: ptr uint8
+
+  RgbView* = object
+    ## Borrowed view over packed RGB24 pixels.
+    width*: int
+    height*: int
+    stride*: int
+    data*: ptr uint8
+
 # ------------------------------------------------------------------------------
 #
 # ------------------------------------------------------------------------------
@@ -63,6 +100,30 @@ proc pixelFormat*(image: RgbaImage): PixelFormat =
 #
 # ------------------------------------------------------------------------------
 proc pixelFormat*(image: RgbImage): PixelFormat =
+  result = pfRgb
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
+proc pixelFormat*(image: I420View): PixelFormat =
+  result = pfI420
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
+proc pixelFormat*(image: Nv12View): PixelFormat =
+  result = pfNv12
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
+proc pixelFormat*(image: RgbaView): PixelFormat =
+  result = pfRgba
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
+proc pixelFormat*(image: RgbView): PixelFormat =
   result = pfRgb
 
 # ------------------------------------------------------------------------------
@@ -116,6 +177,24 @@ proc vPlaneLen*(image: I420Image): int =
 # ------------------------------------------------------------------------------
 #
 # ------------------------------------------------------------------------------
+proc yPlaneLen*(image: I420View): int =
+  result = image.strideY * image.height
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
+proc uPlaneLen*(image: I420View): int =
+  result = image.strideU * chromaHeight(image.height)
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
+proc vPlaneLen*(image: I420View): int =
+  result = image.strideV * chromaHeight(image.height)
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
 proc yPlaneLen*(image: Nv12Image): int =
   result = image.strideY * image.height
 
@@ -123,6 +202,18 @@ proc yPlaneLen*(image: Nv12Image): int =
 #
 # ------------------------------------------------------------------------------
 proc uvPlaneLen*(image: Nv12Image): int =
+  result = image.strideUV * chromaHeight(image.height)
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
+proc yPlaneLen*(image: Nv12View): int =
+  result = image.strideY * image.height
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
+proc uvPlaneLen*(image: Nv12View): int =
   result = image.strideUV * chromaHeight(image.height)
 
 # ------------------------------------------------------------------------------
@@ -141,6 +232,18 @@ proc dataLen*(image: RgbaImage): int =
 #
 # ------------------------------------------------------------------------------
 proc dataLen*(image: RgbImage): int =
+  result = image.stride * image.height
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
+proc dataLen*(image: RgbaView): int =
+  result = image.stride * image.height
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
+proc dataLen*(image: RgbView): int =
   result = image.stride * image.height
 
 # ------------------------------------------------------------------------------
@@ -170,11 +273,40 @@ proc rgbaDataPtr*(image: RgbaImage): ptr uint8 =
 # ------------------------------------------------------------------------------
 #
 # ------------------------------------------------------------------------------
+proc rgbaDataPtr*(image: RgbaView): ptr uint8 =
+  result = image.data
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
+proc rgbDataPtr*(image: var RgbImage): ptr uint8 =
+  if image.data.len == 0:
+    result = nil
+  else:
+    result = addr image.data[0]
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
+proc rgbDataPtr*(image: RgbImage): ptr uint8 =
+  if image.data.len == 0:
+    result = nil
+  else:
+    result = cast[ptr uint8](unsafeAddr image.data[0])
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
+proc rgbDataPtr*(image: RgbView): ptr uint8 =
+  result = image.data
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
 proc isValid*(image: I420Image): bool =
   let expectedY = image.yPlaneLen()
   let expectedU = image.uPlaneLen()
   let expectedV = image.vPlaneLen()
-
   result =
     image.width > 0 and
     image.height > 0 and
@@ -188,10 +320,23 @@ proc isValid*(image: I420Image): bool =
 # ------------------------------------------------------------------------------
 #
 # ------------------------------------------------------------------------------
+proc isValid*(image: I420View): bool =
+  result =
+    image.width > 0 and
+    image.height > 0 and
+    image.strideY >= image.width and
+    image.strideU >= chromaWidth(image.width) and
+    image.strideV >= chromaWidth(image.width) and
+    image.y != nil and
+    image.u != nil and
+    image.v != nil
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
 proc isValid*(image: Nv12Image): bool =
   let expectedY = image.yPlaneLen()
   let expectedUV = image.uvPlaneLen()
-
   result =
     image.width > 0 and
     image.height > 0 and
@@ -203,9 +348,20 @@ proc isValid*(image: Nv12Image): bool =
 # ------------------------------------------------------------------------------
 #
 # ------------------------------------------------------------------------------
+proc isValid*(image: Nv12View): bool =
+  result =
+    image.width > 0 and
+    image.height > 0 and
+    image.strideY >= image.width and
+    image.strideUV >= chromaWidth(image.width) * 2 and
+    image.y != nil and
+    image.uv != nil
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
 proc isValid*(image: RgbaImage): bool =
   let expected = image.dataLen()
-
   result =
     image.width > 0 and
     image.height > 0 and
@@ -215,14 +371,33 @@ proc isValid*(image: RgbaImage): bool =
 # ------------------------------------------------------------------------------
 #
 # ------------------------------------------------------------------------------
+proc isValid*(image: RgbaView): bool =
+  result =
+    image.width > 0 and
+    image.height > 0 and
+    image.stride >= image.width * bytesPerPixel(pfRgba) and
+    image.data != nil
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
 proc isValid*(image: RgbImage): bool =
   let expected = image.dataLen()
-
   result =
     image.width > 0 and
     image.height > 0 and
     image.stride >= image.width * bytesPerPixel(pfRgb) and
     image.data.len >= expected
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
+proc isValid*(image: RgbView): bool =
+  result =
+    image.width > 0 and
+    image.height > 0 and
+    image.stride >= image.width * bytesPerPixel(pfRgb) and
+    image.data != nil
 
 # ------------------------------------------------------------------------------
 #
