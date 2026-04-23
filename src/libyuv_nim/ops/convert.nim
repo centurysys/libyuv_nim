@@ -229,6 +229,60 @@ proc toI420*(src: RgbaView): LY[I420Image] =
 # ------------------------------------------------------------------------------
 #
 # ------------------------------------------------------------------------------
+proc toNv12*(src: RgbaImage): LY[Nv12Image] =
+  let validCheck = requireValidImage(src)
+  if validCheck.isErr:
+    return err(validCheck.error)
+
+  let dstRes = allocNv12Image(src.width, src.height)
+  if dstRes.isErr:
+    return err(dstRes.error)
+  var dst = dstRes.get()
+
+  let rc = ABGRToNV12(
+    rgbaDataPtr(src), src.stride.cint,
+    ptrOrNil(dst.y), dst.strideY.cint,
+    ptrOrNil(dst.uv), dst.strideUV.cint,
+    src.width.cint, src.height.cint
+  )
+  if rc != 0:
+    return err(makeError(
+      lyOperationFailed,
+      &"ARGBToNV12 failed: rc={rc}"
+    ))
+
+  result = ok(dst)
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
+proc toNv12*(src: RgbaView): LY[Nv12Image] =
+  let validCheck = requireValidImage(src)
+  if validCheck.isErr:
+    return err(validCheck.error)
+
+  let dstRes = allocNv12Image(src.width, src.height)
+  if dstRes.isErr:
+    return err(dstRes.error)
+  var dst = dstRes.get()
+
+  let rc = ABGRToNV12(
+    rgbaDataPtr(src), src.stride.cint,
+    ptrOrNil(dst.y), dst.strideY.cint,
+    ptrOrNil(dst.uv), dst.strideUV.cint,
+    src.width.cint, src.height.cint
+  )
+  if rc != 0:
+    return err(makeError(
+      lyOperationFailed,
+      &"ARGBToNV12 failed: rc={rc}"
+    ))
+
+  result = ok(dst)
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
 proc toI420*(src: RgbImage): LY[I420Image] =
   let validCheck = requireValidImage(src)
   if validCheck.isErr:

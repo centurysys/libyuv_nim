@@ -170,6 +170,24 @@ proc P210ToP410*(src_y: ptr uint16; src_stride_y: cint; src_uv: ptr uint16;
                  src_stride_uv: cint; dst_y: ptr uint16; dst_stride_y: cint;
                  dst_uv: ptr uint16; dst_stride_uv: cint; width: cint;
                  height: cint): cint {.cdecl, importc: "P210ToP410".}
+proc ABGRToAR30*(src_abgr: ptr uint8; src_stride_abgr: cint;
+                 dst_ar30: ptr uint8; dst_stride_ar30: cint; width: cint;
+                 height: cint): cint {.cdecl, importc: "ABGRToAR30".}
+proc ARGBToAR30*(src_argb: ptr uint8; src_stride_argb: cint;
+                 dst_ar30: ptr uint8; dst_stride_ar30: cint; width: cint;
+                 height: cint): cint {.cdecl, importc: "ARGBToAR30".}
+proc ARGBToRAW*(src_argb: ptr uint8; src_stride_argb: cint; dst_raw: ptr uint8;
+                dst_stride_raw: cint; width: cint; height: cint): cint {.cdecl,
+    importc: "ARGBToRAW".}
+proc ARGBToRGB24*(src_argb: ptr uint8; src_stride_argb: cint;
+                  dst_rgb24: ptr uint8; dst_stride_rgb24: cint; width: cint;
+                  height: cint): cint {.cdecl, importc: "ARGBToRGB24".}
+proc ARGBToAR64*(src_argb: ptr uint8; src_stride_argb: cint;
+                 dst_ar64: ptr uint16; dst_stride_ar64: cint; width: cint;
+                 height: cint): cint {.cdecl, importc: "ARGBToAR64".}
+proc ARGBToAB64*(src_argb: ptr uint8; src_stride_argb: cint;
+                 dst_ab64: ptr uint16; dst_stride_ab64: cint; width: cint;
+                 height: cint): cint {.cdecl, importc: "ARGBToAB64".}
 proc ScalePlane*(src: ptr uint8; src_stride: cint; src_width: cint;
                  src_height: cint; dst: ptr uint8; dst_stride: cint;
                  dst_width: cint; dst_height: cint; filtering: enum_FilterMode): cint {.
@@ -1237,3 +1255,87 @@ proc RGBScale*(src_rgb: ptr uint8; src_stride_rgb: cint; src_width: cint;
                src_height: cint; dst_rgb: ptr uint8; dst_stride_rgb: cint;
                dst_width: cint; dst_height: cint; filtering: enum_FilterMode): cint {.
     cdecl, importc: "RGBScale".}
+proc ARGBToBGRA*(src_argb: ptr uint8; src_stride_argb: cint;
+                 dst_bgra: ptr uint8; dst_stride_bgra: cint; width: cint;
+                 height: cint): cint {.cdecl, importc: "ARGBToBGRA".}
+proc ARGBToABGR*(src_argb: ptr uint8; src_stride_argb: cint;
+                 dst_abgr: ptr uint8; dst_stride_abgr: cint; width: cint;
+                 height: cint): cint {.cdecl, importc: "ARGBToABGR".}
+proc ARGBToRGBA*(src_argb: ptr uint8; src_stride_argb: cint;
+                 dst_rgba: ptr uint8; dst_stride_rgba: cint; width: cint;
+                 height: cint): cint {.cdecl, importc: "ARGBToRGBA".}
+proc ARGBToRGB565*(src_argb: ptr uint8; src_stride_argb: cint;
+                   dst_rgb565: ptr uint8; dst_stride_rgb565: cint; width: cint;
+                   height: cint): cint {.cdecl, importc: "ARGBToRGB565".}
+proc ARGBToRGB565Dither*(src_argb: ptr uint8; src_stride_argb: cint;
+                         dst_rgb565: ptr uint8; dst_stride_rgb565: cint;
+                         dither4x4: ptr uint8; width: cint; height: cint): cint {.
+    cdecl, importc: "ARGBToRGB565Dither".}
+proc ARGBToARGB1555*(src_argb: ptr uint8; src_stride_argb: cint;
+                     dst_argb1555: ptr uint8; dst_stride_argb1555: cint;
+                     width: cint; height: cint): cint {.cdecl,
+    importc: "ARGBToARGB1555".}
+proc ARGBToARGB4444*(src_argb: ptr uint8; src_stride_argb: cint;
+                     dst_argb4444: ptr uint8; dst_stride_argb4444: cint;
+                     width: cint; height: cint): cint {.cdecl,
+    importc: "ARGBToARGB4444".}
+proc ARGBToI444*(src_argb: ptr uint8; src_stride_argb: cint; dst_y: ptr uint8;
+                 dst_stride_y: cint; dst_u: ptr uint8; dst_stride_u: cint;
+                 dst_v: ptr uint8; dst_stride_v: cint; width: cint; height: cint): cint {.
+    cdecl, importc: "ARGBToI444".}
+proc ARGBToI422*(src_argb: ptr uint8; src_stride_argb: cint; dst_y: ptr uint8;
+                 dst_stride_y: cint; dst_u: ptr uint8; dst_stride_u: cint;
+                 dst_v: ptr uint8; dst_stride_v: cint; width: cint; height: cint): cint {.
+    cdecl, importc: "ARGBToI422".}
+proc ARGBToJ420*(src_argb: ptr uint8; src_stride_argb: cint; dst_yj: ptr uint8;
+                 dst_stride_yj: cint; dst_uj: ptr uint8; dst_stride_uj: cint;
+                 dst_vj: ptr uint8; dst_stride_vj: cint; width: cint;
+                 height: cint): cint {.cdecl, importc: "ARGBToJ420".}
+proc ARGBToJ422*(src_argb: ptr uint8; src_stride_argb: cint; dst_yj: ptr uint8;
+                 dst_stride_yj: cint; dst_uj: ptr uint8; dst_stride_uj: cint;
+                 dst_vj: ptr uint8; dst_stride_vj: cint; width: cint;
+                 height: cint): cint {.cdecl, importc: "ARGBToJ422".}
+proc ARGBToJ400*(src_argb: ptr uint8; src_stride_argb: cint; dst_yj: ptr uint8;
+                 dst_stride_yj: cint; width: cint; height: cint): cint {.cdecl,
+    importc: "ARGBToJ400".}
+proc ABGRToJ420*(src_abgr: ptr uint8; src_stride_abgr: cint; dst_yj: ptr uint8;
+                 dst_stride_yj: cint; dst_uj: ptr uint8; dst_stride_uj: cint;
+                 dst_vj: ptr uint8; dst_stride_vj: cint; width: cint;
+                 height: cint): cint {.cdecl, importc: "ABGRToJ420".}
+proc ABGRToJ422*(src_abgr: ptr uint8; src_stride_abgr: cint; dst_yj: ptr uint8;
+                 dst_stride_yj: cint; dst_uj: ptr uint8; dst_stride_uj: cint;
+                 dst_vj: ptr uint8; dst_stride_vj: cint; width: cint;
+                 height: cint): cint {.cdecl, importc: "ABGRToJ422".}
+proc ABGRToJ400*(src_abgr: ptr uint8; src_stride_abgr: cint; dst_yj: ptr uint8;
+                 dst_stride_yj: cint; width: cint; height: cint): cint {.cdecl,
+    importc: "ABGRToJ400".}
+proc RGBAToJ400*(src_rgba: ptr uint8; src_stride_rgba: cint; dst_yj: ptr uint8;
+                 dst_stride_yj: cint; width: cint; height: cint): cint {.cdecl,
+    importc: "RGBAToJ400".}
+proc ARGBToI400*(src_argb: ptr uint8; src_stride_argb: cint; dst_y: ptr uint8;
+                 dst_stride_y: cint; width: cint; height: cint): cint {.cdecl,
+    importc: "ARGBToI400".}
+proc ARGBToG*(src_argb: ptr uint8; src_stride_argb: cint; dst_g: ptr uint8;
+              dst_stride_g: cint; width: cint; height: cint): cint {.cdecl,
+    importc: "ARGBToG".}
+proc ARGBToNV12*(src_argb: ptr uint8; src_stride_argb: cint; dst_y: ptr uint8;
+                 dst_stride_y: cint; dst_uv: ptr uint8; dst_stride_uv: cint;
+                 width: cint; height: cint): cint {.cdecl, importc: "ARGBToNV12".}
+proc ARGBToNV21*(src_argb: ptr uint8; src_stride_argb: cint; dst_y: ptr uint8;
+                 dst_stride_y: cint; dst_vu: ptr uint8; dst_stride_vu: cint;
+                 width: cint; height: cint): cint {.cdecl, importc: "ARGBToNV21".}
+proc ABGRToNV12*(src_abgr: ptr uint8; src_stride_abgr: cint; dst_y: ptr uint8;
+                 dst_stride_y: cint; dst_uv: ptr uint8; dst_stride_uv: cint;
+                 width: cint; height: cint): cint {.cdecl, importc: "ABGRToNV12".}
+proc ABGRToNV21*(src_abgr: ptr uint8; src_stride_abgr: cint; dst_y: ptr uint8;
+                 dst_stride_y: cint; dst_vu: ptr uint8; dst_stride_vu: cint;
+                 width: cint; height: cint): cint {.cdecl, importc: "ABGRToNV21".}
+proc ARGBToYUY2*(src_argb: ptr uint8; src_stride_argb: cint;
+                 dst_yuy2: ptr uint8; dst_stride_yuy2: cint; width: cint;
+                 height: cint): cint {.cdecl, importc: "ARGBToYUY2".}
+proc ARGBToUYVY*(src_argb: ptr uint8; src_stride_argb: cint;
+                 dst_uyvy: ptr uint8; dst_stride_uyvy: cint; width: cint;
+                 height: cint): cint {.cdecl, importc: "ARGBToUYVY".}
+proc RAWToJNV21*(src_raw: ptr uint8; src_stride_raw: cint; dst_y: ptr uint8;
+                 dst_stride_y: cint; dst_vu: ptr uint8; dst_stride_vu: cint;
+                 width: cint; height: cint): cint {.cdecl, importc: "RAWToJNV21".}
