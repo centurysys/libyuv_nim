@@ -555,3 +555,285 @@ proc toRgb*(src: Nv12View): LY[RgbImage] =
     ))
 
   result = ok(dst)
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
+proc requireSameSize(srcWidth, srcHeight, dstWidth, dstHeight: int;
+                     op: string): LY[void] =
+  if srcWidth != dstWidth or srcHeight != dstHeight:
+    return err(makeError(
+      lyInvalidArgument,
+      &"{op}: size mismatch: src={srcWidth}x{srcHeight}, dst={dstWidth}x{dstHeight}"
+    ))
+  result = okVoid()
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
+proc toRgbaInto*(src: Nv12Image; dst: var RgbaImage): LY[void] =
+  ## Convert NV12 image to a preallocated RGBA image.
+  ##
+  ## Memory order of RGBA is R,G,B,A.
+  ## libyuv API name is NV12ToABGR for this byte layout on little-endian systems.
+  let srcCheck = requireValidImage(src)
+  if srcCheck.isErr:
+    return err(srcCheck.error)
+
+  let dstCheck = requireValidImage(dst)
+  if dstCheck.isErr:
+    return err(dstCheck.error)
+
+  let sizeCheck = requireSameSize(src.width, src.height, dst.width, dst.height,
+                                  "NV12ToRGBA")
+  if sizeCheck.isErr:
+    return err(sizeCheck.error)
+
+  let rc = NV12ToABGR(
+    ptrOrNil(src.y), src.strideY.cint,
+    ptrOrNil(src.uv), src.strideUV.cint,
+    rgbaDataPtr(dst), dst.stride.cint,
+    src.width.cint, src.height.cint
+  )
+  if rc != 0:
+    return err(makeError(
+      lyOperationFailed,
+      &"NV12ToABGR failed: rc={rc}",
+      rc
+    ))
+
+  result = okVoid()
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
+proc toRgbaInto*(src: Nv12Image; dst: RgbaView): LY[void] =
+  ## Convert NV12 image to a borrowed RGBA destination view.
+  let srcCheck = requireValidImage(src)
+  if srcCheck.isErr:
+    return err(srcCheck.error)
+
+  let dstCheck = requireValidImage(dst)
+  if dstCheck.isErr:
+    return err(dstCheck.error)
+
+  let sizeCheck = requireSameSize(src.width, src.height, dst.width, dst.height,
+                                  "NV12ToRGBA")
+  if sizeCheck.isErr:
+    return err(sizeCheck.error)
+
+  let rc = NV12ToABGR(
+    ptrOrNil(src.y), src.strideY.cint,
+    ptrOrNil(src.uv), src.strideUV.cint,
+    rgbaDataPtr(dst), dst.stride.cint,
+    src.width.cint, src.height.cint
+  )
+  if rc != 0:
+    return err(makeError(
+      lyOperationFailed,
+      &"NV12ToABGR failed: rc={rc}",
+      rc
+    ))
+
+  result = okVoid()
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
+proc toRgbaInto*(src: Nv12View; dst: var RgbaImage): LY[void] =
+  ## Convert borrowed NV12 view to a preallocated RGBA image.
+  let srcCheck = requireValidImage(src)
+  if srcCheck.isErr:
+    return err(srcCheck.error)
+
+  let dstCheck = requireValidImage(dst)
+  if dstCheck.isErr:
+    return err(dstCheck.error)
+
+  let sizeCheck = requireSameSize(src.width, src.height, dst.width, dst.height,
+                                  "NV12ToRGBA")
+  if sizeCheck.isErr:
+    return err(sizeCheck.error)
+
+  let rc = NV12ToABGR(
+    src.y, src.strideY.cint,
+    src.uv, src.strideUV.cint,
+    rgbaDataPtr(dst), dst.stride.cint,
+    src.width.cint, src.height.cint
+  )
+  if rc != 0:
+    return err(makeError(
+      lyOperationFailed,
+      &"NV12ToABGR failed: rc={rc}",
+      rc
+    ))
+
+  result = okVoid()
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
+proc toRgbaInto*(src: Nv12View; dst: RgbaView): LY[void] =
+  ## Convert borrowed NV12 view to a borrowed RGBA destination view.
+  let srcCheck = requireValidImage(src)
+  if srcCheck.isErr:
+    return err(srcCheck.error)
+
+  let dstCheck = requireValidImage(dst)
+  if dstCheck.isErr:
+    return err(dstCheck.error)
+
+  let sizeCheck = requireSameSize(src.width, src.height, dst.width, dst.height,
+                                  "NV12ToRGBA")
+  if sizeCheck.isErr:
+    return err(sizeCheck.error)
+
+  let rc = NV12ToABGR(
+    src.y, src.strideY.cint,
+    src.uv, src.strideUV.cint,
+    rgbaDataPtr(dst), dst.stride.cint,
+    src.width.cint, src.height.cint
+  )
+  if rc != 0:
+    return err(makeError(
+      lyOperationFailed,
+      &"NV12ToABGR failed: rc={rc}",
+      rc
+    ))
+
+  result = okVoid()
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
+proc toNv12Into*(src: RgbaImage; dst: var Nv12Image): LY[void] =
+  ## Convert RGBA image to a preallocated NV12 image.
+  ##
+  ## Memory order of RGBA is R,G,B,A.
+  ## libyuv API name is ABGRToNV12 for this byte layout on little-endian systems.
+  let srcCheck = requireValidImage(src)
+  if srcCheck.isErr:
+    return err(srcCheck.error)
+
+  let dstCheck = requireValidImage(dst)
+  if dstCheck.isErr:
+    return err(dstCheck.error)
+
+  let sizeCheck = requireSameSize(src.width, src.height, dst.width, dst.height,
+                                  "RGBAToNV12")
+  if sizeCheck.isErr:
+    return err(sizeCheck.error)
+
+  let rc = ABGRToNV12(
+    rgbaDataPtr(src), src.stride.cint,
+    ptrOrNil(dst.y), dst.strideY.cint,
+    ptrOrNil(dst.uv), dst.strideUV.cint,
+    src.width.cint, src.height.cint
+  )
+  if rc != 0:
+    return err(makeError(
+      lyOperationFailed,
+      &"ABGRToNV12 failed: rc={rc}",
+      rc
+    ))
+
+  result = okVoid()
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
+proc toNv12Into*(src: RgbaImage; dst: Nv12View): LY[void] =
+  ## Convert RGBA image to a borrowed NV12 destination view.
+  let srcCheck = requireValidImage(src)
+  if srcCheck.isErr:
+    return err(srcCheck.error)
+
+  let dstCheck = requireValidImage(dst)
+  if dstCheck.isErr:
+    return err(dstCheck.error)
+
+  let sizeCheck = requireSameSize(src.width, src.height, dst.width, dst.height,
+                                  "RGBAToNV12")
+  if sizeCheck.isErr:
+    return err(sizeCheck.error)
+
+  let rc = ABGRToNV12(
+    rgbaDataPtr(src), src.stride.cint,
+    dst.y, dst.strideY.cint,
+    dst.uv, dst.strideUV.cint,
+    src.width.cint, src.height.cint
+  )
+  if rc != 0:
+    return err(makeError(
+      lyOperationFailed,
+      &"ABGRToNV12 failed: rc={rc}",
+      rc
+    ))
+
+  result = okVoid()
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
+proc toNv12Into*(src: RgbaView; dst: var Nv12Image): LY[void] =
+  ## Convert borrowed RGBA view to a preallocated NV12 image.
+  let srcCheck = requireValidImage(src)
+  if srcCheck.isErr:
+    return err(srcCheck.error)
+
+  let dstCheck = requireValidImage(dst)
+  if dstCheck.isErr:
+    return err(dstCheck.error)
+
+  let sizeCheck = requireSameSize(src.width, src.height, dst.width, dst.height,
+                                  "RGBAToNV12")
+  if sizeCheck.isErr:
+    return err(sizeCheck.error)
+
+  let rc = ABGRToNV12(
+    rgbaDataPtr(src), src.stride.cint,
+    ptrOrNil(dst.y), dst.strideY.cint,
+    ptrOrNil(dst.uv), dst.strideUV.cint,
+    src.width.cint, src.height.cint
+  )
+  if rc != 0:
+    return err(makeError(
+      lyOperationFailed,
+      &"ABGRToNV12 failed: rc={rc}",
+      rc
+    ))
+
+  result = okVoid()
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
+proc toNv12Into*(src: RgbaView; dst: Nv12View): LY[void] =
+  ## Convert borrowed RGBA view to a borrowed NV12 destination view.
+  let srcCheck = requireValidImage(src)
+  if srcCheck.isErr:
+    return err(srcCheck.error)
+
+  let dstCheck = requireValidImage(dst)
+  if dstCheck.isErr:
+    return err(dstCheck.error)
+
+  let sizeCheck = requireSameSize(src.width, src.height, dst.width, dst.height,
+                                  "RGBAToNV12")
+  if sizeCheck.isErr:
+    return err(sizeCheck.error)
+
+  let rc = ABGRToNV12(
+    rgbaDataPtr(src), src.stride.cint,
+    dst.y, dst.strideY.cint,
+    dst.uv, dst.strideUV.cint,
+    src.width.cint, src.height.cint
+  )
+  if rc != 0:
+    return err(makeError(
+      lyOperationFailed,
+      &"ABGRToNV12 failed: rc={rc}",
+      rc
+    ))
+
+  result = okVoid()
