@@ -1251,6 +1251,25 @@ proc ConvertToI420*(sample: ptr uint8; sample_size: csize_t; dst_y: ptr uint8;
                     crop_width: cint; crop_height: cint;
                     rotation: enum_RotationMode; fourcc: uint32): cint {.cdecl,
     importc: "ConvertToI420".}
+proc ARGBScale*(src_argb: ptr uint8; src_stride_argb: cint; src_width: cint;
+                src_height: cint; dst_argb: ptr uint8; dst_stride_argb: cint;
+                dst_width: cint; dst_height: cint; filtering: enum_FilterMode): cint {.
+    cdecl, importc: "ARGBScale".}
+proc ARGBScaleClip*(src_argb: ptr uint8; src_stride_argb: cint; src_width: cint;
+                    src_height: cint; dst_argb: ptr uint8;
+                    dst_stride_argb: cint; dst_width: cint; dst_height: cint;
+                    clip_x: cint; clip_y: cint; clip_width: cint;
+                    clip_height: cint; filtering: enum_FilterMode): cint {.
+    cdecl, importc: "ARGBScaleClip".}
+proc YUVToARGBScaleClip*(src_y: ptr uint8; src_stride_y: cint; src_u: ptr uint8;
+                         src_stride_u: cint; src_v: ptr uint8;
+                         src_stride_v: cint; src_fourcc: uint32;
+                         src_width: cint; src_height: cint; dst_argb: ptr uint8;
+                         dst_stride_argb: cint; dst_fourcc: uint32;
+                         dst_width: cint; dst_height: cint; clip_x: cint;
+                         clip_y: cint; clip_width: cint; clip_height: cint;
+                         filtering: enum_FilterMode): cint {.cdecl,
+    importc: "YUVToARGBScaleClip".}
 proc RGBScale*(src_rgb: ptr uint8; src_stride_rgb: cint; src_width: cint;
                src_height: cint; dst_rgb: ptr uint8; dst_stride_rgb: cint;
                dst_width: cint; dst_height: cint; filtering: enum_FilterMode): cint {.

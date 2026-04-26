@@ -1,7 +1,7 @@
 import std/strformat
 import results
 
-import ../bindings/c_api
+import ../bindings/types
 import ../core/errors
 import ../core/image_types
 import ../core/image_alloc

@@ -28,7 +28,7 @@ import std/strutils
 import std/times
 
 import libyuv_nim
-import libyuv_nim/bindings/c_api
+import libyuv_nim/bindings/types
 import libyuv_nim/core/errors
 
 # ------------------------------------------------------------------------------

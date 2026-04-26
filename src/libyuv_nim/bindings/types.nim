@@ -1,4 +1,5 @@
 import ./c_api
+export c_api
 
 type
   ## Generic libyuv return code.
